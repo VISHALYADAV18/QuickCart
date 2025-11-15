@@ -11,10 +11,10 @@ pipeline {
     stage('Sample Build Step') {
       steps {
         // basic sanity command to prove runner works
-        sh '''
-          echo "Hello from Jenkins - QuickCart"
-          echo "Listing repo files:"
-          ls -la
+        bat '''
+          echo Hello from Jenkins - QuickCart
+          echo Listing repo files:
+          dir /A
         '''
       }
     }
