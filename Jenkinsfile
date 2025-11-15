@@ -1,30 +1,74 @@
-// Jenkinsfile (minimal test pipeline)
 pipeline {
   agent any
+
+  tools {
+    // use the NodeJS installation configured in Jenkins Global Tool Configuration
+    nodejs 'Node_24'
+  }
+
   stages {
+
     stage('Checkout') {
       steps {
-        // Checkout current repo
         checkout scm
+        echo "Repository checkout completed."
       }
     }
-    stage('Sample Build Step') {
+
+    stage('Install Dependencies') {
       steps {
-        // basic sanity command to prove runner works
         bat '''
-          echo Hello from Jenkins - QuickCart
-          echo Listing repo files:
-          dir /A
+          echo Installing npm dependencies...
+          npm ci
         '''
       }
     }
+
+    stage('TypeScript Check') {
+      steps {
+        bat '''
+          echo Running TypeScript type check...
+          npm run check
+        '''
+      }
+    }
+
+    stage('Build Application') {
+      steps {
+        bat '''
+          echo Building frontend + backend using Vite + esbuild...
+          npm run build
+        '''
+      }
+    }
+
+    stage('Archive Build Artifacts') {
+      steps {
+        echo "Archiving dist folder..."
+        archiveArtifacts artifacts: 'dist/**', fingerprint: true
+      }
+    }
+
+    stage('Future: Tests') {
+      when {
+        expression { false }  // disabled for now (no tests)
+      }
+      steps {
+        bat '''
+          echo Running test suite...
+          npm test
+        '''
+      }
+    }
+
   }
+
   post {
     success {
-      echo "Pipeline completed successfully."
+      echo "🎉 Jenkins Pipeline completed successfully."
     }
     failure {
-      echo "Pipeline failed."
+      echo "❌ Jenkins Pipeline failed."
     }
   }
 }
