@@ -13,9 +13,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 md:px-8 py-24 md:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6" data-testid="text-hero-title">
-              Fresh Groceries,
+              Fresh Picks,
               <br />
-              <span className="text-primary">Delivered Fast</span>
+              <span className="text-primary">Delivered Quick</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed" data-testid="text-hero-subtitle">
               Shop quality groceries from the comfort of your home.
