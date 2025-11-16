@@ -25,8 +25,8 @@ pipeline {
       }
     }
 
-  stage('SonarQube Analysis') {
-    steps {
+    stage('SonarQube Analysis') {
+      steps {
       withSonarQubeEnv('SonarQube') {
         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
           bat """
@@ -36,13 +36,8 @@ pipeline {
               -Dsonar.host.url=http://localhost:9000 ^
               -Dsonar.login=%SONAR_TOKEN%
           """
+          }
         }
-      }
-   }
-    }
-    stage('Build App') {
-      steps {
-        bat 'npm run build'
       }
     }
 
@@ -77,6 +72,7 @@ pipeline {
 
     stage('Deploy to Docker Swarm') {
       steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
         bat """
             echo Pulling latest image...
             docker pull %DOCKER_USER%/quickcart:latest
@@ -85,7 +81,7 @@ pipeline {
             docker service update --image %DOCKER_USER%/quickcart:latest quickcart
         """
     }
-}
+    }}
 
   }
 
