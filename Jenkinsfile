@@ -76,15 +76,16 @@ pipeline {
     }
 
     stage('Deploy to Docker Swarm') {
-            steps {
-                sshagent(['swarm-ssh']) {
-                    bat """
-                        ssh -o StrictHostKeyChecking=no %USERNAME%@localhost ^
-                        "docker service update --image %DOCKER_USER%/quickcart:latest quickcart"
-                    """
-                }
-            }
+      steps {
+        bat """
+            echo Pulling latest image...
+            docker pull %DOCKER_USER%/quickcart:latest
+ 
+            echo Updating Swarm service...
+            docker service update --image %DOCKER_USER%/quickcart:latest quickcart
+        """
     }
+}
 
   }
 
