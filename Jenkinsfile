@@ -33,19 +33,22 @@ pipeline {
       }
     }
 
-    stage('SonarQube Analysis') {
-      steps {
-        withSonarQubeEnv('SonarQube') {
+  stage('SonarQube Analysis') {
+    steps {
+      withSonarQubeEnv('SonarQube') {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
           bat """
-            sonar-scanner ^
+            ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
               -Dsonar.projectKey=QuickCart ^
               -Dsonar.sources=. ^
               -Dsonar.host.url=http://localhost:9000 ^
-              -Dsonar.login=%sonar-token%
+              -Dsonar.login=%SONAR_TOKEN%
           """
         }
       }
-    }
+   }
+ }
+
 
     stage('Build Application') {
       steps {
