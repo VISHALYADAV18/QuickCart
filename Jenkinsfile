@@ -25,6 +25,21 @@ pipeline {
       }
     }
 
+  stage('SonarQube Analysis') {
+    steps {
+      withSonarQubeEnv('SonarQube') {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+          bat """
+            ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+              -Dsonar.projectKey=QuickCart ^
+              -Dsonar.sources=. ^
+              -Dsonar.host.url=http://localhost:9000 ^
+              -Dsonar.login=%SONAR_TOKEN%
+          """
+        }
+      }
+   }
+    }
     stage('Build App') {
       steps {
         bat 'npm run build'
@@ -41,17 +56,17 @@ pipeline {
     }
 
     stage('Docker Push to Hub') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-            bat """
-                docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                docker tag quickcart:latest %DOCKER_USER%/quickcart:latest
-                docker push %DOCKER_USER%/quickcart:latest
-                docker logout
-            """
-        }
+      steps {
+          withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+              bat """
+                  docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                  docker tag quickcart:latest %DOCKER_USER%/quickcart:latest
+                  docker push %DOCKER_USER%/quickcart:latest
+                  docker logout
+              """
+          }
+      }
     }
-}
 
 
     stage('Archive Build') {
@@ -60,14 +75,25 @@ pipeline {
       }
     }
 
+    stage('Deploy to Docker Swarm') {
+            steps {
+                sshagent(['swarm-ssh']) {
+                    bat """
+                        ssh -o StrictHostKeyChecking=no %USERNAME%@localhost ^
+                        "docker service update --image %DOCKER_USER%/quickcart:latest quickcart"
+                    """
+                }
+            }
+    }
+
   }
 
   post {
     success {
-      echo "Build + Docker Image created successfully!"
+      echo "🔥 Full CI/CD pipeline completed successfully!"
     }
     failure {
-      echo "Pipeline failed."
+      echo "❌ Pipeline failed."
     }
   }
 }
