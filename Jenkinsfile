@@ -2,7 +2,6 @@ pipeline {
   agent any
 
   tools {
-    // use the NodeJS installation configured in Jenkins Global Tool Configuration
     nodejs 'Node_24'
   }
 
@@ -11,76 +10,39 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout scm
-        echo "Repository checkout completed."
       }
     }
 
-    // stage('Install Dependencies') {
-    //   steps {
-    //     bat '''
-    //       echo Installing npm dependencies...
-    //       npm ci
-    //     '''
-    //   }
-    // }
+    stage('Install Dependencies') {
+      steps {
+        bat 'npm ci'
+      }
+    }
 
     stage('TypeScript Check') {
       steps {
-        bat '''
-          echo Running TypeScript type check...
-          npm run check
-        '''
+        bat 'npm run check'
       }
     }
 
-//   stage('SonarQube Analysis') {
-//     steps {
-//       withSonarQubeEnv('SonarQube') {
-//         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-//           bat """
-//             ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
-//               -Dsonar.projectKey=QuickCart ^
-//               -Dsonar.sources=. ^
-//               -Dsonar.host.url=http://localhost:9000 ^
-//               -Dsonar.login=%SONAR_TOKEN%
-//           """
-//         }
-//       }
-//    }
-//  }
-
-
-    // stage('Build Application') {
-    //   steps {
-    //     bat '''
-    //       echo Building frontend + backend using Vite + esbuild...
-    //       npm run build
-    //     '''
-    //   }
-    // }
-
-    // stage('Archive Build Artifacts') {
-    //   steps {
-    //     echo "Archiving dist folder..."
-    //     archiveArtifacts artifacts: 'dist/**', fingerprint: true
-    //   }
-    // }
-
-  stage('Docker Test') {
-    steps {
-      bat "docker version"
-    }
-    }
-
-    stage('Future: Tests') {
-      when {
-        expression { false }  // disabled for now (no tests)
-      }
+    stage('Build App') {
       steps {
-        bat '''
-          echo Running test suite...
-          npm test
-        '''
+        bat 'npm run build'
+      }
+    }
+
+    stage('Docker Build') {
+      steps {
+        bat """
+          echo Building Docker image quickcart:latest
+          docker build -t quickcart:latest .
+        """
+      }
+    }
+
+    stage('Archive Build') {
+      steps {
+        archiveArtifacts artifacts: 'dist/**'
       }
     }
 
@@ -88,10 +50,10 @@ pipeline {
 
   post {
     success {
-      echo "🎉 Build & Sonar scan successful."
+      echo "Build + Docker Image created successfully!"
     }
     failure {
-      echo "❌ Jenkins Pipeline failed."
+      echo "Pipeline failed."
     }
   }
 }
