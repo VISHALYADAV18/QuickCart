@@ -33,6 +33,20 @@ pipeline {
       }
     }
 
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('SonarQube') {
+          bat """
+            sonar-scanner ^
+              -Dsonar.projectKey=QuickCart
+              -Dsonar.sources=.
+              -Dsonar.host.url=http://localhost:9000s
+              -Dsonar.login=%sonar-token%
+          """
+        }
+      }
+    }
+
     stage('Build Application') {
       steps {
         bat '''
@@ -65,7 +79,7 @@ pipeline {
 
   post {
     success {
-      echo "🎉 Jenkins Pipeline completed successfully."
+      echo "🎉 Build & Sonar scan successful."
     }
     failure {
       echo "❌ Jenkins Pipeline failed."
