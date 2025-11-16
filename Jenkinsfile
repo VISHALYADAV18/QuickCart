@@ -40,7 +40,7 @@ pipeline {
             sonar-scanner ^
               -Dsonar.projectKey=QuickCart ^
               -Dsonar.sources=. ^
-              -Dsonar.host.url=http://YOUR-SONAR-IP:9000 ^
+              -Dsonar.host.url=http://localhost:9000 ^
               -Dsonar.login=%sonar-token%
           """
         }
