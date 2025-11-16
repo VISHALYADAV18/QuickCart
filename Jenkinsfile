@@ -15,14 +15,14 @@ pipeline {
       }
     }
 
-    stage('Install Dependencies') {
-      steps {
-        bat '''
-          echo Installing npm dependencies...
-          npm ci
-        '''
-      }
-    }
+    // stage('Install Dependencies') {
+    //   steps {
+    //     bat '''
+    //       echo Installing npm dependencies...
+    //       npm ci
+    //     '''
+    //   }
+    // }
 
     stage('TypeScript Check') {
       steps {
@@ -33,37 +33,43 @@ pipeline {
       }
     }
 
-  stage('SonarQube Analysis') {
+//   stage('SonarQube Analysis') {
+//     steps {
+//       withSonarQubeEnv('SonarQube') {
+//         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+//           bat """
+//             ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+//               -Dsonar.projectKey=QuickCart ^
+//               -Dsonar.sources=. ^
+//               -Dsonar.host.url=http://localhost:9000 ^
+//               -Dsonar.login=%SONAR_TOKEN%
+//           """
+//         }
+//       }
+//    }
+//  }
+
+
+    // stage('Build Application') {
+    //   steps {
+    //     bat '''
+    //       echo Building frontend + backend using Vite + esbuild...
+    //       npm run build
+    //     '''
+    //   }
+    // }
+
+    // stage('Archive Build Artifacts') {
+    //   steps {
+    //     echo "Archiving dist folder..."
+    //     archiveArtifacts artifacts: 'dist/**', fingerprint: true
+    //   }
+    // }
+
+  stage('Docker Test') {
     steps {
-      withSonarQubeEnv('SonarQube') {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-          bat """
-            ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
-              -Dsonar.projectKey=QuickCart ^
-              -Dsonar.sources=. ^
-              -Dsonar.host.url=http://localhost:9000 ^
-              -Dsonar.login=%SONAR_TOKEN%
-          """
-        }
-      }
-   }
- }
-
-
-    stage('Build Application') {
-      steps {
-        bat '''
-          echo Building frontend + backend using Vite + esbuild...
-          npm run build
-        '''
-      }
+      bat "docker version"
     }
-
-    stage('Archive Build Artifacts') {
-      steps {
-        echo "Archiving dist folder..."
-        archiveArtifacts artifacts: 'dist/**', fingerprint: true
-      }
     }
 
     stage('Future: Tests') {
