@@ -15,7 +15,7 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        bat 'npm ci'
+        bat 'npm install'
       }
     }
 
@@ -39,6 +39,20 @@ pipeline {
         """
       }
     }
+
+    stage('Docker Push to Hub') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            bat """
+                docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                docker tag quickcart:latest %DOCKER_USER%/quickcart:latest
+                docker push %DOCKER_USER%/quickcart:latest
+                docker logout
+            """
+        }
+    }
+}
+
 
     stage('Archive Build') {
       steps {
